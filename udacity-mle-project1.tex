@@ -128,31 +128,65 @@ My particular implementation uses the same \verb|mean_squared_error| performance
 
 \section*{Model Performance}
 
-
+The provided skeleton code created a loop to increase the maximum decision tree depth size and plot the error results. 
+Figures \ref{fig:lc1}, \ref{fig:lc4}, \ref{fig:lc10} illustrate these curves for different \verb|max_depth| values.
+As the depth of the tree increases, the overall error for training and test data inputs drops with the size of the training set.
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.6\textwidth]{dt-learningcurve-1.png}
+	\includegraphics[width=0.65\textwidth]{dt-learningcurve-1.png}
 	\caption{A plot of the training and test data error over size of training. This image is the initial run with the decision tree \texttt{depth = 1}.}
+	\label{fig:lc1}
 \end{figure}
+
+Figure \ref{fig:lc1} shows an interesting case where there is considerable bias with \verb|max_depth=1|.
+When the depth increases to 4, the training error drops significantly as the training data size increases.
+The test error also drops, but does not converge to the training error curve.
+The mean squared error hovers close to 20 for training sets over 200 data points, which seems to 
+These plots indicate that the algorithm is fully trained with at least 200 data points and a max depth of at least 4.
+This model still has some variance, due to the difference between training data error and test data error.
+One interesting trend is that the plots based on depths 5 through 10 do not increase the test error significantly.
+This observation indicates that higher depth does not always mean better performance for the added computational cost. \\
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.6\textwidth]{dt-learningcurve-4.png}
+	\includegraphics[width=0.65\textwidth]{dt-learningcurve-4.png}
 	\caption{This image shows the error with a decision tree \texttt{depth = 4}.}
+	\label{fig:lc4}
 \end{figure}
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.6\textwidth]{dt-learningcurve-10.png}
+	\includegraphics[width=0.65\textwidth]{dt-learningcurve-10.png}
 	\caption{This image shows the error with a decision tree \texttt{depth = 10}.}
+	\label{fig:lc10}
 \end{figure}
+
+By plotting the test error against the depth of the the \verb|DecisionTreeRegressor|, shown in Figure \ref{fig:mc}, I get confirmation of the trend seen in the learning curves.
+Although {\bf training error approaches 0}, the test error continues to {\bf remain between 10 and 20}.
+Given this plot, I would recommend a \verb|DecisionTreeRegressor| model with \verb|max_depth| $\in \{4,5,6\}$.
 
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.6\textwidth]{model-complexity.png}
+	\includegraphics[width=0.65\textwidth]{model-complexity.png}
 	\caption{A graph of the model complexity as the depth of the decision tree increases.}
+	\label{fig:mc}
 \end{figure}
+
+\section*{Model Prediction}
+
+Using the \verb|GridSearchCV| discussed before, I ran the program several times.
+On the whole, the tuned model resulting from this grid search based on mean-squared error had a \verb|mzx_depth=4|, with the occasional value of \verb|5| or \verb|6|.
+One sample run of the main program iterated the model fit function five times and I saw the following output:
+\begin{center}
+	\verb|depth = [4, 6, 9, 4, 4]|
+	\verb|predictions = [21.6297, 20.7659, 19.3272, 21.6297, 21.6297]|
+\end{center}
+These results confirm that the grid search tunes to model to favor a {\bf tree depth of 4}.
+Based on the consistent prediction values, I think this model is a reasonable predictor of housing prices.
+
+
+
 
 
 \end{document}
