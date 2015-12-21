@@ -114,23 +114,23 @@ Choosing an error-based metric fits the problem, since we want the prediction al
 In particular, I selected the {\bf mean-squared error} metric to penalize incorrect predictions far more than an absolute error.
 The other scoring mechanisms discussed in class (e.g. precision, recall) make most sense for classification problems, not regression. \\
 
-When tuning the \texttt{DecisionTreeRegressor}, we must split the data into appropriately sized training and testing data, which in this case was split 70/30.
-Performing this split was enabled by a simple function call to \verb|train_test_split|.
-We need to split the data into randomly chosen bins of training/test sets to get the best performance possible.
-If you do not do the split correctly, it will result in a learning algorithm with poor learning performance (too little training data) or poor validation (too little test data).
-In general, machine learning algorithms need cross validation to tune the algorithm using more sub sets of data from the given set.
-For example, $K$-fold cross validation will run $K$ experiments with a randomly chosen set of data.
-It will also be validated $K$ times. \\
+When you tune a machine learning algorithm, you have to keep in mind the tradeoff between error and complexity.
+If you overfit the algorithm, it will be too sensitive to outlier data; however, if you underfit the algorithm, it will have poor prediction performance.
+The tuning of the \texttt{DecisionTreeRegressor} used a 70/30 split of the provided housing data set using the simple function call to \verb|train_test_split|.
+By pulling out 70\% of the data randomly for training data, it will lessen the chance of bias, or under-fitting, into the predictor.
+Overall, we need to provide as much un-biased training data to the learning algorithm so that we get a better learning result.
+\\
 
 The cross validation tool we used in this project was \verb|GridSeachCV| that accepts a candidate algorithm, the parameters of interest, and a scoring function.
 By leveraging a known algorithm, the best \verb|max_depth| of the \verb|DecisionTreeRegressor| is computed with an exhaustive search.
 My particular implementation uses the same \verb|mean_squared_error| performance metric and passes in the \verb|max_depth| parameter array.
+Performing an exhaustive cross validation operation prevents the algorithm from being tuned to a particular subset of the housing data set.
+Otherwise, the algorithm could possibly favor cluster of data to make an incorrect prediction.
+If \verb|train_test_split| were the only method used to tune the algorithm, we would likely introduce more variance sensitivity in the model.
+The default \verb|GridSeachCV| performs a 3-fold cross-validation process that diversifies the training data.
+Doing so allows for this particular data to be used three more times to train the model.
 
 \section*{Model Performance}
-
-The provided skeleton code created a loop to increase the maximum decision tree depth size and plot the error results. 
-Figures \ref{fig:lc1}, \ref{fig:lc4}, \ref{fig:lc10} illustrate these curves for different \verb|max_depth| values.
-As the depth of the tree increases, the overall error for training and test data inputs drops with the size of the training set.
 
 \begin{figure}[h!]
 	\centering
@@ -139,21 +139,12 @@ As the depth of the tree increases, the overall error for training and test data
 	\label{fig:lc1}
 \end{figure}
 
-Figure \ref{fig:lc1} shows an interesting case where there is considerable bias with \verb|max_depth=1|.
-When the depth increases to 4, the training error drops significantly as the training data size increases.
-The test error also drops, but does not converge to the training error curve.
-The mean squared error hovers close to 20 for training sets over 200 data points, which seems to 
-These plots indicate that the algorithm is fully trained with at least 200 data points and a max depth of at least 4.
-This model still has some variance, due to the difference between training data error and test data error.
-One interesting trend is that the plots based on depths 5 through 10 do not increase the test error significantly.
-This observation indicates that higher depth does not always mean better performance for the added computational cost. \\
-
-\begin{figure}[h!]
-	\centering
-	\includegraphics[width=0.65\textwidth]{dt-learningcurve-4.png}
-	\caption{This image shows the error with a decision tree \texttt{depth = 4}.}
-	\label{fig:lc4}
-\end{figure}
+The provided skeleton code created a loop to increase the maximum decision tree depth size and plot the error results. 
+Figures \ref{fig:lc1} and \ref{fig:lc10} illustrate these curves for different \verb|max_depth| values.
+By examining these figures (and the ones generated at run time) the {\bf training error approaches a plateau} as the depth of the decision tree increases and as the amount training data is increased.
+With a lower depth, like Figure \ref{fig:lc1}, this plateau results in a very large training error, but the error hovers around the test data error.
+The {\bf testing error decreases} as the size of the training data set increases.
+{\bf Although the testing and training error decrease, there still remains an gap between the results}, even at a high \verb|max_depth| value. \\
 
 \begin{figure}[h!]
 	\centering
@@ -161,6 +152,16 @@ This observation indicates that higher depth does not always mean better perform
 	\caption{This image shows the error with a decision tree \texttt{depth = 10}.}
 	\label{fig:lc10}
 \end{figure}
+
+Figure \ref{fig:lc1} shows an interesting case where there is {\bf considerable bias} with \verb|max_depth=1|.
+When the depth increases to 10, the training error drops significantly as the training data size increases.
+The test error also drops, but does not converge to the training error curve.
+These plots indicate that the algorithm is fully trained with at least 200 data points.
+This model still has variance, due to the difference between training data error and test data error.
+Figure \ref{fig:lc10} demonstrates that the model still suffers from {\bf high variance} since the the test and training test error remain separated by about 20.
+One interesting trend is that the plots based on depths 5 through 10 do not increase the test error significantly.
+This observation indicates that higher depth does not always mean better performance for the added computational cost. \\
+
 
 By plotting the test error against the depth of the the \verb|DecisionTreeRegressor|, shown in Figure \ref{fig:mc}, I get confirmation of the trend seen in the learning curves.
 Although {\bf training error approaches 0}, the test error continues to {\bf remain between 10 and 20}.
@@ -176,15 +177,17 @@ Given this plot, I would recommend a \verb|DecisionTreeRegressor| model with \ve
 \section*{Model Prediction}
 
 Using the \verb|GridSearchCV| discussed before, I ran the program several times.
-On the whole, the tuned model resulting from this grid search based on mean-squared error had a \verb|mzx_depth=4|, with the occasional value of \verb|5| or \verb|6|.
+On the whole, the tuned model resulting from this grid search based on mean-squared error had a \verb|max_depth=4|, with the occasional value of \verb|5| or \verb|6|.
 One sample run of the main program iterated the model fit function five times and I saw the following output:
 \begin{center}
 	\verb|depth = [4, 6, 9, 4, 4]|
 	\verb|predictions = [21.6297, 20.7659, 19.3272, 21.6297, 21.6297]|
 \end{center}
-These results confirm that the grid search tunes to model to favor a {\bf tree depth of 4}.
-Based on the consistent prediction values, I think this model is a reasonable predictor of housing prices.
+These results confirm that the grid search tunes to model to favor a {\bf tree depth of 4}. \\
 
+The predictions from this tuned estimator appear to be near the mean and median home prices. In fact, they are easily within one standard deviation of the mean.
+The course so far has not discussed much about the output of these algorithms, other than that they are ``predictors'' based on prior data. 
+How would we actually know at this point whether this prediction are reasonable other than seeing the {\bf learning curves reducing} and that the {\bf predicted value is near the mean}?
 
 
 
